@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -18,78 +17,79 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-
-            android:text="Touch To Play"
+            android:text="Touch To Start"
             android:textSize="18sp" />
     </android.support.v7.widget.Toolbar>
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
-        android:orientation="vertical"
+    <GridLayout
+        android:id="@+id/grid"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <ImageButton
+            android:id="@+id/left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_columnWeight="1"
+            android:layout_row="0"
+            android:layout_rowSpan="2"
+            android:layout_rowWeight="1"
+            android:onClick="onLeft"
+            android:src="@drawable/left" />
+
+        <ImageButton
+            android:id="@+id/up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_columnWeight="1"
+            android:layout_row="0"
+            android:layout_rowWeight="1"
+            android:onClick="onUp"
+            android:src="@drawable/up" />
+
+        <ImageButton
+            android:id="@+id/down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_columnWeight="1"
+            android:layout_row="1"
+            android:layout_rowWeight="1"
+            android:onClick="onDown"
+            android:src="@drawable/down" />
+
+        <ImageButton
+            android:id="@+id/right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="2"
+            android:layout_columnWeight="1"
+            android:layout_row="0"
+            android:layout_rowSpan="2"
+            android:layout_rowWeight="1"
+            android:onClick="onRight"
+            android:src="@drawable/right" />
+
+    </GridLayout>
+
+
+
+    <RelativeLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar"
+        android:layout_above="@id/grid">
 
         <com.example.kapil.snakegame.Activity_main
             android:id="@+id/main_canvas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-
-        <GridLayout
-            android:id="@+id/grid"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom">
+            android:layout_height="match_parent" />
 
-            <ImageButton
-                android:id="@+id/left"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="0"
-                android:layout_columnWeight="1"
-                android:layout_row="0"
-                android:layout_rowSpan="2"
-                android:layout_rowWeight="1"
-                android:onClick="onLeft"
-                android:src="@drawable/left" />
-
-            <ImageButton
-                android:id="@+id/up"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:layout_columnWeight="1"
-                android:layout_row="0"
-                android:layout_rowWeight="1"
-                android:onClick="onUp"
-                android:src="@drawable/up" />
-
-            <ImageButton
-                android:id="@+id/down"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:layout_columnWeight="1"
-                android:layout_row="1"
-                android:layout_rowWeight="1"
-                android:onClick="onDown"
-                android:src="@drawable/down" />
-
-            <ImageButton
-                android:id="@+id/right"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="2"
-                android:layout_columnWeight="1"
-                android:layout_row="0"
-                android:layout_rowSpan="2"
-                android:layout_rowWeight="1"
-                android:onClick="onRight"
-                android:src="@drawable/right" />
-
-        </GridLayout>
-
-    </FrameLayout>
+    </RelativeLayout>
 
 
-</LinearLayout>
+</RelativeLayout>
