@@ -1,13 +1,17 @@
 package com.example.kapil.snakegame;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -20,14 +24,27 @@ import static android.graphics.Color.rgb;
 
 public class Activity_main extends View {
 
-    Paint paintBlackStroke;
-    Paint paintBlackFill;
-    boolean gameOver,flag = false;
-    int height,width,score,radius,speed = 50;
-    ArrayList <Coordinate> snake;
-    Coordinate head;
-    Fruit fruit;
-    TextView textView;
+    private Paint paintBlackStroke;
+    private Paint paintBlackFill;
+    private boolean gameOver,flag = false;
+    private int score,radius,speed = 50;
+    private int width,height;
+    private ArrayList <Coordinate> snake;
+    private Coordinate head;
+    private Fruit fruit;
+    private TextView textView;
+    private boolean firstPlay = true;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        if (firstPlay) {
+            firstPlay = false;
+            reset();
+        }
+
+        return super.onTouchEvent(event);
+    }
 
     enum Diretion {
         LEFT,RIGHT,UP,DOWN
@@ -37,31 +54,6 @@ public class Activity_main extends View {
 
     private void setText (String text) {
         textView.setText(text);
-    }
-
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-        if (gameOver && !flag) {
-            gameOver = false;
-            setText("Score : 0");
-        }
-
-        boolean temp = super.onTouchEvent(event);
-        float x = event.getRawX();
-        float y = event.getRawY();
-        if (x >= 0 && x <= width/3) {
-            moveLeft();
-        } else if (x > width/3 && x <= 2*width/3) {
-            if (y >=0 && y <= height/2)
-                moveUp();
-            else
-                moveDown();
-        } else {
-            moveRight();
-        }
-        return temp;
     }
 
     public void reset () {
@@ -94,28 +86,31 @@ public class Activity_main extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         width = canvas.getWidth();
-        height = canvas.getHeight() - 300;
+        height = canvas.getHeight();
 
         paintBlackStroke.setColor(rgb(169, 5, 0));
         paintBlackStroke.setStyle(Paint.Style.STROKE);
         paintBlackStroke.setStrokeWidth(10);
 
-        for (int i=0;i<=width;i+=2*radius) {
-            canvas.drawCircle(i,10, radius, paintBlackStroke);
-            canvas.drawCircle(i,height-10, radius, paintBlackStroke);
-        }
+        /*
+            Borders
 
-        for (int i=0;i<=height;i+= 2*radius) {
-            canvas.drawCircle(10,i, radius, paintBlackStroke);
-            canvas.drawCircle(width-10,i, radius, paintBlackStroke);
-        }
+            for (int i=0;i<=width;i+=2*radius) {
+                canvas.drawCircle(i,10, radius, paintBlackStroke);
+                canvas.drawCircle(i,height-10, radius, paintBlackStroke);
+            }
+
+            for (int i=0;i<=height;i+= 2*radius) {
+                canvas.drawCircle(10,i, radius, paintBlackStroke);
+                canvas.drawCircle(width-10,i, radius, paintBlackStroke);
+            }
+        */
 
         paintBlackFill.setColor(Color.BLUE);
         paintBlackFill.setStyle(Paint.Style.FILL);
         canvas.drawCircle(fruit.f_x,fruit.f_y, fruit.radius, paintBlackFill);
 
         for (int i=0;i<snake.size();i++) {
-            //Log.i("coord",String.valueOf(i.x) + " " + String.valueOf(i.y) );
             if (i == snake.size()-1) {
                 paintBlackFill.setColor(rgb(123, 201, 0));
                 paintBlackFill.setStyle(Paint.Style.FILL);
@@ -126,6 +121,7 @@ public class Activity_main extends View {
                 canvas.drawCircle(snake.get(i).x, snake.get(i).y, radius, paintBlackFill);
             }
         }
+
         invalidate();
         if (!gameOver) {
             flag = true;
@@ -173,26 +169,36 @@ public class Activity_main extends View {
 
     private void logic () {
 
+        //Check for gameOver condition
         for (int i=0;i<snake.size()-1;i++) {
             Coordinate curr = snake.get(i);
             if (curr.x == head.x && curr.y == head.y) {
                 gameOver = true;
+                dialogBox();
                 setText("GameOver Score : " + Integer.toString(score));
                 return;
             }
         }
 
+        //If snake head hits fruit
         if (isIntersect(head.x,head.y,fruit.f_x,fruit.f_y)){
             int moveX = head.x,moveY = head.y;
-            if (getDirection().equals(Diretion.LEFT)) {//left
-                moveX -= 2*radius;
-            } else if (getDirection().equals(Diretion.RIGHT)) {//right
-                moveX += 2*radius;
-            } else if (getDirection().equals(Diretion.UP)) {//up
-                moveY -= 2*radius;
-            } else if (getDirection().equals(Diretion.DOWN)) {//down
-                moveY += 2*radius;
+
+            switch (getDirection()) {
+                case LEFT:
+                    moveX -= 2*radius;
+                    break;
+                case RIGHT:
+                    moveX += 2*radius;
+                    break;
+                case UP:
+                    moveY -= 2*radius;
+                    break;
+                case DOWN:
+                    moveY += 2*radius;
+                    break;
             }
+
             snake.add(new Coordinate(moveX,moveY));
             head = snake.get(snake.size() - 1);
             fruit.getRandomPos();
@@ -200,20 +206,26 @@ public class Activity_main extends View {
             setText("Score : " + Integer.toString(score));
         }
 
-        if (!((head.x >= 2*radius && head.x <= width-2*radius) && (head.y >= 2*radius && head.y <= height-2*radius))) {
+        //If snake head cross boundary
+        if (!((head.x >= 0 && head.x <= width) && (head.y >= 0 && head.y <= height))) {
             Coordinate next = new Coordinate(head.x,head.y);
-            if (getDirection().equals(Diretion.LEFT)) {//left
-                head.x  = width;
-                next.x = width - 2*radius;
-            } else if (getDirection().equals(Diretion.RIGHT)) {//right
-                head.x  = 2*radius;
-                next.x = 4*radius;
-            } else if (getDirection().equals(Diretion.UP)) {//up
-                head.y = height;
-                next.y = height - 2*radius;
-            } else if (getDirection().equals(Diretion.DOWN)) {//down
-                head.y = 2*radius;
-                next.y = 4*radius;
+            switch (getDirection()) {
+                case LEFT:
+                    head.x  = width;
+                    next.x = width - 2*radius;
+                    break;
+                case RIGHT:
+                    head.x  = 2*radius;
+                    next.x = 4*radius;
+                    break;
+                case UP:
+                    head.y = height;
+                    next.y = height - 2*radius;
+                    break;
+                case DOWN:
+                    head.y = 2*radius;
+                    next.y = 4*radius;
+                    break;
             }
             snake.set(snake.size()-2,head);
             snake.set(snake.size()-1,next);
@@ -222,18 +234,50 @@ public class Activity_main extends View {
 
     }
 
+    private void dialogBox() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+        alertDialogBuilder.setMessage("Game Over Score " +  Integer.toString(score));
+        alertDialogBuilder.setPositiveButton("Play Again",
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        reset();
+                    }
+                });
+
+        alertDialogBuilder.setNegativeButton("Quit",
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+
+                    }
+                });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
     public void move () {
 
         int moveX = 0,moveY = 0;
-        if (getDirection().equals(Diretion.LEFT)) {//left
-            moveX -= 2*radius;
-        } else if (getDirection().equals(Diretion.RIGHT)) {//right
-            moveX += 2*radius;
-        } else if (getDirection().equals(Diretion.UP)) {//up
-            moveY -= 2*radius;
-        } else if (getDirection().equals(Diretion.DOWN)) {//down
-            moveY += 2*radius;
+
+        switch (getDirection()) {
+            case LEFT:
+                moveX -= 2*radius;
+                break;
+            case RIGHT:
+                moveX += 2*radius;
+                break;
+            case UP:
+                moveY -= 2*radius;
+                break;
+            case DOWN:
+                moveY += 2*radius;
+                break;
         }
+
         snake.add(new Coordinate(head.x+moveX,head.y+moveY));
         snake.remove(0);
         head = snake.get(snake.size()-1);
@@ -284,29 +328,28 @@ public class Activity_main extends View {
         }
     }
 
-	private class Coordinate {
+    private class Coordinate {
+        private int x,y;
 
-		private int x,y;
-
-		private Coordinate (int x,int y) {
-			this.x = x;
-			this.y = y;
-		}
+        private Coordinate (int x,int y) {
+            this.x = x;
+            this.y = y;
+        }
 
 
-	}
+    }
 
-	private class Fruit {
+    private class Fruit {
 
-		private int f_x,f_y,radius=20;
+        private int f_x,f_y,radius=20;
 
-		private void getRandomPos () {
-			Random random = new Random();
-			f_x = random.nextInt(width-2*radius);
-			f_y = random.nextInt(height-2*radius);
-			if (f_x < 2*radius) f_x = 2*radius;
-			if (f_y < 2*radius) f_y = 2*radius;
-		}
-	}
+        private void getRandomPos () {
+            Random random = new Random();
+            f_x = random.nextInt(width-2*radius);
+            f_y = random.nextInt(height-2*radius);
+            if (f_x < 2*radius) f_x = 2*radius;
+            if (f_y < 2*radius) f_y = 2*radius;
+        }
+    }
 
 }
